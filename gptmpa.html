@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AR Navigation with Real-Time Compass & Location</title>
+  <title>AR Navigation with Real-Time Tracking</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" />
   <style>
     body {
@@ -24,7 +24,7 @@
       width: calc(100% - 20px);
       max-width: 400px;
       padding: 15px;
-      background: #2d2d3b; /* Non-transparent background */
+      background: #2d2d3b;
       border-radius: 8px;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
       color: #fff;
@@ -115,22 +115,22 @@
   <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 
   <script>
-    // Default Location
+    // Initialize map and default location
     const defaultLatLng = [47.210750, -122.542540];
     
-    var map = L.map('map').setView(defaultLatLng, 14); // Set initial view to default location
+    var map = L.map('map').setView(defaultLatLng, 14);
     L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
       attribution: 'Leaflet &copy; OpenStreetMap contributors',
       maxZoom: 18
     }).addTo(map);
 
-    var userMarker = L.marker(defaultLatLng).addTo(map); // Set marker to default location
+    var userMarker = L.marker(defaultLatLng).addTo(map); // User's current location marker
     var destinationLatLng = null;
     var isARModeEnabled = false;
     var arrowCanvas = document.getElementById('ar-canvas');
     var arrowContext = arrowCanvas.getContext('2d');
 
-    // Initialize user location watch with 4-5 meters accuracy
+    // Function to watch user location in real-time
     function watchUserLocation() {
       if (navigator.geolocation) {
         navigator.geolocation.watchPosition(function (position) {
@@ -138,20 +138,19 @@
           var lng = position.coords.longitude;
           var userLatLng = L.latLng(lat, lng);
 
-          // Update location with small movements (4-5 meters)
+          // Update the user's location on the map and marker
           map.setView(userLatLng, 14);
           userMarker.setLatLng(userLatLng);
 
           if (destinationLatLng && isARModeEnabled) {
-            updateAR();
+            updateAR(userLatLng);
           }
         }, function () {
           alert('Unable to retrieve your location.');
         }, {
           enableHighAccuracy: true,
           maximumAge: 0,
-          timeout: 5000,
-          distanceFilter: 1 // Update location if the user moves by at least 5 meters
+          timeout: 5000
         });
       } else {
         alert('Geolocation is not supported by this browser.');
@@ -182,7 +181,7 @@
                 document.getElementById('time').innerHTML = (summary.totalTime / 60).toFixed(2) + ' minutes';
 
                 if (isARModeEnabled) {
-                  updateAR();
+                  updateAR(userMarker.getLatLng());
                 }
               }).addTo(map);
             } else {
@@ -203,12 +202,13 @@
       }
     });
 
-    // Start AR
+    // Start AR mode
     function startAR() {
       const video = document.getElementById('video');
       video.style.display = 'block';
       arrowCanvas.style.display = 'block';
 
+      // Start camera stream
       navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
         .then(stream => {
           video.srcObject = stream;
@@ -218,9 +218,11 @@
             arrowCanvas.width = video.videoWidth;
             arrowCanvas.height = video.videoHeight;
 
-            // Initialize AR update loop
+            // Continuously update AR view
             const updateFrame = () => {
-              updateAR();
+              if (isARModeEnabled && destinationLatLng) {
+                updateAR(userMarker.getLatLng());
+              }
               requestAnimationFrame(updateFrame);
             };
             updateFrame();
@@ -229,38 +231,36 @@
           console.error('Error accessing camera:', error);
         });
 
-      // Initialize compass
+      // Initialize compass for device orientation
       window.addEventListener('deviceorientation', function (event) {
-        const compassHeading = event.alpha || 0; // Fetch compass heading
-        if (destinationLatLng) {
-          updateAR(compassHeading);
+        const compassHeading = event.alpha || 0; // Compass heading in degrees
+        if (destinationLatLng && isARModeEnabled) {
+          updateAR(userMarker.getLatLng(), compassHeading);
         }
-      }, true);
+      });
     }
 
-    // Update AR with current orientation
-    function updateAR(compassHeading = 0) {
-      if (!destinationLatLng) return;
-
-      const userLatLng = L.latLng(userMarker.getLatLng().lat, userMarker.getLatLng().lng);
+    // Update AR arrow with real-time direction and location
+    function updateAR(userLatLng, compassHeading = 0) {
       const distance = userLatLng.distanceTo(destinationLatLng);
       const bearing = userLatLng.bearingTo(destinationLatLng);
 
+      // Clear the canvas and draw the arrow
       arrowContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
-
       arrowContext.save();
       arrowContext.translate(arrowCanvas.width / 2, arrowCanvas.height / 2);
       arrowContext.rotate((bearing - compassHeading) * Math.PI / 180);
       arrowContext.fillStyle = 'rgba(255, 0, 0, 0.7)';
       arrowContext.beginPath();
-      arrowContext.moveTo(0, -30);
-      arrowContext.lineTo(15, 15);
-      arrowContext.lineTo(-15, 15);
+      arrowContext.moveTo(0, -50);
+      arrowContext.lineTo(25, 25);
+      arrowContext.lineTo(-25, 25);
       arrowContext.closePath();
       arrowContext.fill();
       arrowContext.restore();
     }
 
+    // Start watching user location
     watchUserLocation();
   </script>
 </body>
