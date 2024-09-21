@@ -27,6 +27,7 @@
       background: rgba(40, 40, 55, 0.9);
       border-radius: 8px;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      color: #fff;
     }
     #search-bar-container input {
       width: calc(100% - 20px);
@@ -39,11 +40,14 @@
       box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
     }
     #info {
-      font-size: 15px;
+      font-size: 16px;
       color: #dddddd;
+      text-align: center;
     }
     #info p {
       margin: 5px 0;
+      font-weight: bold;
+      color: #ff5555;
     }
     #ar-container {
       position: absolute;
@@ -221,18 +225,13 @@
           console.error('Error accessing camera:', error);
         });
 
-      // Initialize compass (ensure QuickCompass or similar is available)
-      const compass = new QuickCompass(); // Example: Ensure this class or method is correct
-
-      compass.init().then(() => {
-        compass.on('headingChange', (heading) => {
-          if (destinationLatLng) {
-            updateAR(heading);
-          }
-        });
-      }).catch(error => {
-        console.error('Error initializing compass:', error);
-      });
+      // Initialize compass
+      window.addEventListener('deviceorientation', function (event) {
+        const compassHeading = event.alpha || 0; // Fetch compass heading
+        if (destinationLatLng) {
+          updateAR(compassHeading);
+        }
+      }, true);
     }
 
     // Update AR with current orientation
@@ -246,42 +245,46 @@
 
       // Clear and draw arrow
       arrowContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
-      drawArrow(arrowContext, arrowCanvas.width / 2, arrowCanvas.height / 2, arrowRotation);
+      drawArrow(arrowRotation);
     }
 
-    // Draw 3D Arrow
-    function drawArrow(ctx, x, y, rotation) {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(rotation * Math.PI / 180);
+    function drawArrow(angle) {
+      arrowContext.save();
+      arrowContext.translate(arrowCanvas.width / 2, arrowCanvas.height / 2);
+      arrowContext.rotate((angle * Math.PI) / 180);
+      
+      arrowContext.beginPath();
+      arrowContext.moveTo(0, -50); // Arrow tip
+      arrowContext.lineTo(-20, 50); // Left tail
+      arrowContext.lineTo(20, 50); // Right tail
+      arrowContext.closePath();
+      
+      arrowContext.fillStyle = 'rgba(255, 85, 85, 0.9)';
+      arrowContext.fill();
 
-      ctx.beginPath();
-      ctx.moveTo(-10, -20);
-      ctx.lineTo(10, -20);
-      ctx.lineTo(10, 0);
-      ctx.lineTo(20, 0);
-      ctx.lineTo(0, 30);
-      ctx.lineTo(-20, 0);
-      ctx.lineTo(-10, 0);
-      ctx.lineTo(-10, -20);
-      ctx.closePath();
+      // 3D effect shadow
+      arrowContext.shadowColor = 'rgba(0, 0, 0, 0.5)';
+      arrowContext.shadowBlur = 10;
+      arrowContext.shadowOffsetX = 5;
+      arrowContext.shadowOffsetY = 5;
 
-      ctx.fillStyle = 'red';
-      ctx.fill();
-      ctx.restore();
+      arrowContext.restore();
     }
 
-    // Calculate heading from start to end points
     function calculateHeading(start, end) {
-      const dLat = end.lat - start.lat;
-      const dLng = end.lng - start.lng;
-      const angle = Math.atan2(dLng, dLat) * (180 / Math.PI);
-      return (angle + 360) % 360;
+      const dLon = (end.lng - start.lng) * (Math.PI / 180);
+      const lat1 = start.lat * (Math.PI / 180);
+      const lat2 = end.lat * (Math.PI / 180);
+
+      const y = Math.sin(dLon) * Math.cos(lat2);
+      const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+
+      const heading = (Math.atan2(y, x) * (180 / Math.PI) + 360) % 360;
+      return heading;
     }
 
-    // Initialize
+    // Watch user location
     watchUserLocation();
   </script>
-
 </body>
 </html>
