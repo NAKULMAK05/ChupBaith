@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AR Navigation with Professional 3D Arrow</title>
+  <title>AR Navigation with Real-Time Compass & Location</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" />
   <style>
     body {
@@ -24,7 +24,7 @@
       width: calc(100% - 20px);
       max-width: 400px;
       padding: 15px;
-      background: rgba(40, 40, 55, 0.9);
+      background: #2d2d3b; /* Non-transparent background */
       border-radius: 8px;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
       color: #fff;
@@ -35,13 +35,13 @@
       margin-bottom: 10px;
       border-radius: 5px;
       border: none;
-      background-color: #2d2d3b;
+      background-color: #3a3a3a;
       color: #ffffff;
       box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
     }
     #info {
       font-size: 16px;
-      color: #dddddd;
+      color: #ffffff;
       text-align: center;
     }
     #info p {
@@ -130,7 +130,7 @@
     var arrowCanvas = document.getElementById('ar-canvas');
     var arrowContext = arrowCanvas.getContext('2d');
 
-    // Initialize user location watch
+    // Initialize user location watch with 4-5 meters accuracy
     function watchUserLocation() {
       if (navigator.geolocation) {
         navigator.geolocation.watchPosition(function (position) {
@@ -138,6 +138,7 @@
           var lng = position.coords.longitude;
           var userLatLng = L.latLng(lat, lng);
 
+          // Update location with small movements (4-5 meters)
           map.setView(userLatLng, 14);
           userMarker.setLatLng(userLatLng);
 
@@ -147,7 +148,10 @@
         }, function () {
           alert('Unable to retrieve your location.');
         }, {
-          enableHighAccuracy: true
+          enableHighAccuracy: true,
+          maximumAge: 0,
+          timeout: 5000,
+          distanceFilter: 5 // Update location if the user moves by at least 5 meters
         });
       } else {
         alert('Geolocation is not supported by this browser.');
@@ -241,14 +245,13 @@
       const userLatLng = L.latLng(userMarker.getLatLng().lat, userMarker.getLatLng().lng);
       const destinationHeading = calculateHeading(userLatLng, destinationLatLng);
 
-      const arrowRotation = (compassHeading - destinationHeading + 360) % 360;
-
-      // Clear and draw arrow
-      arrowContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
+      const arrowRotation = destinationHeading - compassHeading;
       drawArrow(arrowRotation);
     }
 
     function drawArrow(angle) {
+      arrowContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height); // Clear canvas
+
       arrowContext.save();
       arrowContext.translate(arrowCanvas.width / 2, arrowCanvas.height / 2);
       arrowContext.rotate((angle * Math.PI) / 180);
@@ -262,7 +265,6 @@
       arrowContext.fillStyle = 'rgba(255, 85, 85, 0.9)';
       arrowContext.fill();
 
-      // 3D effect shadow
       arrowContext.shadowColor = 'rgba(0, 0, 0, 0.5)';
       arrowContext.shadowBlur = 10;
       arrowContext.shadowOffsetX = 5;
