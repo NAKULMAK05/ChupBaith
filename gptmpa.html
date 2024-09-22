@@ -7,68 +7,56 @@
   <title>AR Navigation with Professional 3D Arrow</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" />
   <style>
-    /* Target the entire routing container */
-    .leaflet-routing-container {
-      background-color: #ffffff;
-      /* Solid white background */
-      border: 2px solid #007BFF;
-      /* Blue border for emphasis */
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      /* Light shadow for 3D effect */
-      border-radius: 8px;
-      /* Rounded corners */
-      width: 300px;
-      /* Adjust width */
-      color: #000;
-      /* Black text */
-      padding: 5px;
-      /* Spacing inside */
-      z-index: 800;
-      /* Ensure it stays on top */
-    }
+/* Target the entire routing container */
+.leaflet-routing-container {
+  background-color: #ffffff;  /* Solid white background */
+  border: 2px solid #007BFF;  /* Blue border for emphasis */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* Light shadow for 3D effect */
+  border-radius: 8px;         /* Rounded corners */
+  width: 300px;               /* Adjust width */
+  color: #000;                /* Black text */
+  padding: 15px;              /* Spacing inside */
+  z-index: 1000;              /* Ensure it stays on top */
+}
 
-    /* Target the direction steps inside the container */
-    .leaflet-routing-alternatives-container {
-      background-color: #f9f9f9;
-      /* Slightly lighter background for steps */
-      padding: 5px;
-      /* Spacing for alternatives */
-      border-radius: 6px;
-      /* Rounded corners */
-    }
+/* Target the direction steps inside the container */
+.leaflet-routing-alternatives-container {
+  background-color: #f9f9f9;  /* Slightly lighter background for steps */
+  padding: 10px;              /* Spacing for alternatives */
+  border-radius: 6px;         /* Rounded corners */
+}
 
-    /* Target the header of the direction box */
-    .leaflet-routing-container h3 {
-      color: #007BFF;
-      /* Blue heading text */
-      margin-top: 0;
-      font-size: 12px;
-      font-family: 'Arial', sans-serif;
-      /* Clean, readable font */
-    }
+/* Target the header of the direction box */
+.leaflet-routing-container h3 {
+  color: #007BFF;  /* Blue heading text */
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-family: 'Arial', sans-serif; /* Clean, readable font */
+}
 
-    /* Customize the individual steps */
-    .leaflet-routing-alt {
-      padding: 10px;
-      background-color: #e9ecef;
-      /* Light gray background for steps */
-      border-radius: 5px;
-    }
+/* Customize the individual steps */
+.leaflet-routing-alt {
+  padding: 10px;
+  background-color: #e9ecef; /* Light gray background for steps */
+  margin-bottom: 5px;
+  border-radius: 5px;
+}
 
-    /* Customize the text in the routing steps */
-    .leaflet-routing-instructions p {
-      margin: 2px 2px 2px 2px;
-      font-size: 12px;
-      color: #333;
-      /* Darker text for instructions */
-    }
+/* Customize the text in the routing steps */
+.leaflet-routing-instructions p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #333; /* Darker text for instructions */
+}
 
+/* Customize hover effects for the steps */
 
-    /* Make sure the leaflet control doesn't overlap the map */
-    .leaflet-top.leaflet-right .leaflet-routing-container {
-      margin-top: 60px;
-      /* Adjust position based on other controls */
-    }
+/* Make sure the leaflet control doesn't overlap the map */
+.leaflet-top.leaflet-right .leaflet-routing-container {
+  margin-top: 60px;  /* Adjust position based on other controls */
+}
+
 
     body {
       margin: 0;
@@ -151,7 +139,7 @@
     #enable-ar-btn {
       position: absolute;
       right: 10px;
-      top: 10px;
+      bottom: 10px;
       z-index: 1001;
       padding: 10px 20px;
       background-color: #ff5555;
