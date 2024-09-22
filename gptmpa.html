@@ -308,39 +308,41 @@
     }
 
     // Draw 3D Arrow
-    function drawArrow(ctx, x, y, rotation) {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(rotation * Math.PI / 180);
+   // Draw 3D Arrow with increased length
+function drawArrow(ctx, x, y, rotation) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rotation * Math.PI / 180);
 
-      // Set shadow properties for a 3D effect
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'; // Shadow color
-      ctx.shadowBlur = 10; // Shadow blur
-      ctx.shadowOffsetX = 12; // Shadow offset in X
-      ctx.shadowOffsetY = 8; // Shadow offset in Y
+  // Set shadow properties for a 3D effect
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'; // Shadow color
+  ctx.shadowBlur = 10; // Shadow blur
+  ctx.shadowOffsetX = 12; // Shadow offset in X
+  ctx.shadowOffsetY = 8;  // Shadow offset in Y
 
-      ctx.beginPath();
-      ctx.moveTo(-15, -30); // Start point (increased height)
-      ctx.lineTo(15, -30);  // Right tip
-      ctx.lineTo(15, 0);    // Right base
-      ctx.lineTo(30, 0);    // Right end
-      ctx.lineTo(0, 40);    // Bottom tip (increased height)
-      ctx.lineTo(-30, 0);   // Left end
-      ctx.lineTo(-15, 0);   // Left base
-      ctx.lineTo(-15, -30); // Close path
-      ctx.closePath();
+  ctx.beginPath();
+  ctx.moveTo(-20, -50); // Start point (further up, increased height)
+  ctx.lineTo(20, -50);  // Right tip (further up)
+  ctx.lineTo(20, 0);    // Right base
+  ctx.lineTo(40, 0);    // Right end (wider base)
+  ctx.lineTo(0, 70);    // Bottom tip (increased length)
+  ctx.lineTo(-40, 0);   // Left end (wider base)
+  ctx.lineTo(-20, 0);   // Left base
+  ctx.lineTo(-20, -50); // Close path (further up)
+  ctx.closePath();
 
-      // Set the arrow color to blue
-      ctx.fillStyle = '#007BFF'; // Fill color (blue)
-      ctx.fill();
+  // Set the arrow color to blue
+  ctx.fillStyle = '#007BFF'; // Fill color (blue)
+  ctx.fill();
 
-      // Optionally, add stroke for outline
-      ctx.strokeStyle = '#000'; // Outline color
-      ctx.lineWidth = 2; // Outline width
-      ctx.stroke(); // Apply the stroke
+  // Optionally, add stroke for outline
+  ctx.strokeStyle = '#000'; // Outline color
+  ctx.lineWidth = 2;        // Outline width
+  ctx.stroke();             // Apply the stroke
 
-      ctx.restore();
-    }
+  ctx.restore();
+}
+
 
 
 
