@@ -1,21 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AR Navigation with Professional 3D Arrow</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" />
   <style>
+    /* Target the entire routing container */
+    .leaflet-routing-container {
+      background-color: #ffffff;
+      /* Solid white background */
+      border: 2px solid #007BFF;
+      /* Blue border for emphasis */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      /* Light shadow for 3D effect */
+      border-radius: 8px;
+      /* Rounded corners */
+      width: 300px;
+      /* Adjust width */
+      color: #000;
+      /* Black text */
+      padding: 5px;
+      /* Spacing inside */
+      z-index: 800;
+      /* Ensure it stays on top */
+    }
+
+    /* Target the direction steps inside the container */
+    .leaflet-routing-alternatives-container {
+      background-color: #f9f9f9;
+      /* Slightly lighter background for steps */
+      padding: 5px;
+      /* Spacing for alternatives */
+      border-radius: 6px;
+      /* Rounded corners */
+    }
+
+    /* Target the header of the direction box */
+    .leaflet-routing-container h3 {
+      color: #007BFF;
+      /* Blue heading text */
+      margin-top: 0;
+      font-size: 12px;
+      font-family: 'Arial', sans-serif;
+      /* Clean, readable font */
+    }
+
+    /* Customize the individual steps */
+    .leaflet-routing-alt {
+      padding: 10px;
+      background-color: #e9ecef;
+      /* Light gray background for steps */
+      border-radius: 5px;
+    }
+
+    /* Customize the text in the routing steps */
+    .leaflet-routing-instructions p {
+      margin: 2px 2px 2px 2px;
+      font-size: 12px;
+      color: #333;
+      /* Darker text for instructions */
+    }
+
+
+    /* Make sure the leaflet control doesn't overlap the map */
+    .leaflet-top.leaflet-right .leaflet-routing-container {
+      margin-top: 60px;
+      /* Adjust position based on other controls */
+    }
+
     body {
       margin: 0;
       padding: 0;
       font-family: Arial, sans-serif;
       overflow: hidden;
     }
+
     #map {
       width: 100%;
       height: 100vh;
     }
+
     #search-bar-container {
       position: absolute;
       top: 10px;
@@ -28,6 +94,7 @@
       border-radius: 8px;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
     }
+
     #search-bar-container input {
       width: calc(100% - 20px);
       padding: 10px;
@@ -38,17 +105,20 @@
       color: #ffffff;
       box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
     }
+
     #info {
       font-size: 15px;
       color: #dddddd;
     }
+
     #info p {
       margin: 5px 0;
     }
+
     #ar-container {
       position: absolute;
       bottom: 10px;
-      right: 10px;
+      right: 2px;
       width: calc(100% - 20px);
       max-width: 400px;
       height: 300px;
@@ -59,6 +129,7 @@
       background: #000;
       display: none;
     }
+
     #ar-container video {
       position: absolute;
       top: 0;
@@ -67,6 +138,7 @@
       height: 100%;
       object-fit: cover;
     }
+
     #ar-container canvas {
       position: absolute;
       top: 0;
@@ -75,10 +147,11 @@
       height: 100%;
       z-index: 2;
     }
+
     #enable-ar-btn {
       position: absolute;
-      bottom: 10px;
       right: 10px;
+      top: 10px;
       z-index: 1001;
       padding: 10px 20px;
       background-color: #ff5555;
@@ -90,6 +163,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <div id="search-bar-container">
@@ -113,7 +187,7 @@
   <script>
     // Default Location
     const defaultLatLng = [47.210750, -122.542540];
-    
+
     var map = L.map('map').setView(defaultLatLng, 14);
     L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
       attribution: 'Leaflet &copy; OpenStreetMap contributors',
@@ -187,7 +261,7 @@
     });
 
     // Enable AR Mode
-    document.getElementById('enable-ar-btn').addEventListener('click', function() {
+    document.getElementById('enable-ar-btn').addEventListener('click', function () {
       if (!isARModeEnabled) {
         isARModeEnabled = true;
         document.getElementById('ar-container').style.display = 'block';
@@ -223,7 +297,7 @@
         });
 
       // Device orientation event for compass heading
-      window.addEventListener('deviceorientation', function(event) {
+      window.addEventListener('deviceorientation', function (event) {
         currentHeading = event.alpha; // alpha gives the compass direction
         if (destinationLatLng && isARModeEnabled) {
           updateAR(currentHeading);
@@ -251,20 +325,36 @@
       ctx.translate(x, y);
       ctx.rotate(rotation * Math.PI / 180);
 
+      // Set shadow properties for a 3D effect
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'; // Shadow color
+      ctx.shadowBlur = 10; // Shadow blur
+      ctx.shadowOffsetX = 12; // Shadow offset in X
+      ctx.shadowOffsetY = 8; // Shadow offset in Y
+
       ctx.beginPath();
-      ctx.moveTo(-10, -20);
-      ctx.lineTo(10, -20);
-      ctx.lineTo(10, 0);
-      ctx.lineTo(20, 0);
-      ctx.lineTo(0, 20);
-      ctx.lineTo(-20, 0);
-      ctx.lineTo(-10, 0);
-      ctx.lineTo(-10, -20);
+      ctx.moveTo(-15, -30); // Start point (increased height)
+      ctx.lineTo(15, -30);  // Right tip
+      ctx.lineTo(15, 0);    // Right base
+      ctx.lineTo(30, 0);    // Right end
+      ctx.lineTo(0, 40);    // Bottom tip (increased height)
+      ctx.lineTo(-30, 0);   // Left end
+      ctx.lineTo(-15, 0);   // Left base
+      ctx.lineTo(-15, -30); // Close path
       ctx.closePath();
-      ctx.fillStyle = '#ff5555';
+
+      // Set the arrow color to blue
+      ctx.fillStyle = '#007BFF'; // Fill color (blue)
       ctx.fill();
+
+      // Optionally, add stroke for outline
+      ctx.strokeStyle = '#000'; // Outline color
+      ctx.lineWidth = 2; // Outline width
+      ctx.stroke(); // Apply the stroke
+
       ctx.restore();
     }
+
+
 
     // Calculate heading from user to destination
     function calculateHeading(from, to) {
@@ -281,4 +371,5 @@
     watchUserLocation();
   </script>
 </body>
+
 </html>
