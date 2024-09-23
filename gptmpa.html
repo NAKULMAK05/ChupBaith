@@ -229,40 +229,84 @@
       }
     }
 
+
+    const customLocations = {
+    "nagpur railway station platform no 4": { lat: 21.15218, lng:  79.088877 },
+    "nagpur railway station platform no 1": { lat: 21.15243, lng:  79.08837 },
+    "nagpur railway station platform no 5": { lat: 21.15194, lng:  79.08878 },
+    "nagpur railway station ATM": { lat: 21.15157, lng:  79.08815 },
+    "nagpur railway station foodcourt": { lat: 21.15184, lng:  79.08856 },
+    "nagpur railway station restroom": { lat: 21.15247, lng:  79.08842 },
+    "kanchan regency": { lat: 21.17616, lng: 79.05371},
+    "abc railway station foodcourt": { lat: 0.88, lng: 0.93 },
+    "xyz railway station restroom": { lat: 0.80, lng: 0.95 },
+    "xyz railway station foodcourt": { lat: 0.82, lng: 0.97 }
+};
     // Handle search and routing
     document.getElementById('search').addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') {
-        var query = document.getElementById('search').value;
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`)
-          .then(response => response.json())
-          .then(data => {
-            if (data && data.length > 0) {
-              var latLng = L.latLng(parseFloat(data[0].lat), parseFloat(data[0].lon));
-              destinationLatLng = latLng;
+    if (e.key === 'Enter') {
+        var query = document.getElementById('search').value.toLowerCase();
 
-              L.Routing.control({
+        // Check for custom locations
+        if (customLocations[query]) {
+            // Use custom location coordinates
+            destinationLatLng = [customLocations[query].lat, customLocations[query].lng];
+
+            // Update the map with the custom location marker
+            L.marker(destinationLatLng).addTo(map).bindPopup(query).openPopup();
+            map.setView(destinationLatLng, 14);
+
+            // Optionally add routing for the custom location
+            L.Routing.control({
                 waypoints: [
-                  L.latLng(userMarker.getLatLng().lat, userMarker.getLatLng().lng),
-                  L.latLng(latLng.lat, latLng.lng)
+                    userMarker.getLatLng(),
+                    L.latLng(destinationLatLng[0], destinationLatLng[1])
                 ],
                 routeWhileDragging: true
-              }).on('routesfound', function (e) {
+            }).on('routesfound', function (e) {
                 var routes = e.routes;
                 var summary = routes[0].summary;
                 document.getElementById('distance').innerHTML = (summary.totalDistance / 1000).toFixed(2) + ' km';
                 document.getElementById('time').innerHTML = (summary.totalTime / 60).toFixed(2) + ' minutes';
 
                 if (isARModeEnabled) {
-                  updateAR(currentHeading);
+                    updateAR(currentHeading);
                 }
-              }).addTo(map);
-            } else {
-              alert('Location not found!');
-            }
-          })
-          .catch(error => console.error('Error:', error));
-      }
-    });
+            }).addTo(map);
+        } else {
+            // Fetch from geocoding API if not a custom location
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        var latLng = L.latLng(parseFloat(data[0].lat), parseFloat(data[0].lon));
+                        destinationLatLng = latLng;
+
+                        L.Routing.control({
+                            waypoints: [
+                                userMarker.getLatLng(),
+                                L.latLng(latLng.lat, latLng.lng)
+                            ],
+                            routeWhileDragging: true
+                        }).on('routesfound', function (e) {
+                            var routes = e.routes;
+                            var summary = routes[0].summary;
+                            document.getElementById('distance').innerHTML = (summary.totalDistance / 1000).toFixed(2) + ' km';
+                            document.getElementById('time').innerHTML = (summary.totalTime / 60).toFixed(2) + ' minutes';
+
+                            if (isARModeEnabled) {
+                                updateAR(currentHeading);
+                            }
+                        }).addTo(map);
+                    } else {
+                        alert('Location not found!');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    }
+});
+
 
     // Enable AR Mode
     document.getElementById('enable-ar-btn').addEventListener('click', function () {
